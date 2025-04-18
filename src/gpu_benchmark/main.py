@@ -6,11 +6,9 @@ import datetime
 
 def main():
     """Entry point for the GPU benchmark command-line tool."""
-    # Simple log message at the beginning
-    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{current_time}] GPU Benchmark starting...")
-    print(f"This benchmark will run for 10 seconds")
-    print("-" * 50)
+    # Simple start message
+    print("GPU Benchmark starting...")
+    print("This benchmark will run for 10 seconds")
     
     # Fixed duration
     duration = 10  # 10 seconds
@@ -19,9 +17,17 @@ def main():
     pipe = load_pipeline()
     print("Pipeline loaded successfully!")
     
-    print("\nRunning benchmark:")
+    print("Running benchmark...")
     # Run the benchmark with the loaded pipeline
     results = run_benchmark(pipe=pipe, duration=duration)
+    
+    # Print the key metrics immediately after benchmark completion
+    print("\n" + "="*50)
+    print("BENCHMARK RESULTS:")
+    print(f"Images Generated: {results['images_generated']}")
+    print(f"Max GPU Temperature: {results['max_temp']}°C")
+    print(f"Avg GPU Temperature: {results['avg_temp']:.1f}°C")
+    print("="*50)
     
     print("\nSubmitting to leaderboard...")
     # Upload results to Supabase
@@ -31,10 +37,7 @@ def main():
         avg_temp=results['avg_temp']
     )
     
-    # Simple log message at the end
-    end_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print("-" * 50)
-    print(f"[{end_time}] GPU Benchmark completed")
+    print("Benchmark completed")
 
 if __name__ == "__main__":
     main()
