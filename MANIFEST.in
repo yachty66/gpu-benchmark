@@ -1,0 +1,18 @@
+# Exclude specific files and patterns
+exclude .env
+exclude *.ipynb
+exclude .gitignore
+exclude *.log
+exclude *.txt
+
+# Exclude entire directories
+prune env
+prune .git
+prune __pycache__
+prune benchmark_results
+prune .ipynb_checkpoints
+
+# Global exclusions (apply to all directories)
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude .DS_Store

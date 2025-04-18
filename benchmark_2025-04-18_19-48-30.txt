@@ -1,0 +1,29 @@
+GPU Benchmark - 2025-04-18_19-48-30
+Device: NVIDIA GeForce RTX 3090
+Benchmark duration: 10 seconds
+Prompt: a photo of an astronaut riding a horse on mars
+--------------------------------------------------
+
+DETAILED LOG:
+Image 0: Time=2.45s, Temp=34°C, GenTime=2449.06ms
+Image 1: Time=4.77s, Temp=42°C, GenTime=2317.61ms
+Image 2: Time=7.09s, Temp=45°C, GenTime=2323.14ms
+Image 3: Time=9.42s, Temp=44°C, GenTime=2322.68ms
+Image 4: Time=11.74s, Temp=46°C, GenTime=2326.35ms
+
+==================================================
+BENCHMARK SUMMARY:
+Benchmark completed in 11.74 seconds
+Images generated: 5
+Images per second: 0.43
+Average GPU time per image: 2347.77 ms
+Total GPU processing time: 11.74 seconds
+GPU utilization: 99.9%
+
+Temperature Statistics:
+  Starting temperature: 34°C
+  Ending temperature: 46°C
+  Average temperature: 42.8°C
+  Maximum temperature: 46°C
+  Temperature increase: 12°C
+==================================================
