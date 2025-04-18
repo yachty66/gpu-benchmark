@@ -23,7 +23,7 @@ def main():
     # Run the benchmark with the loaded pipeline
     results = run_benchmark(pipe=pipe, duration=duration)
     
-    print("\nUploading results to Supabase...")
+    print("\nSubmitting to leaderboard...")
     # Upload results to Supabase
     upload_benchmark_results(
         image_count=results['images_generated'],
@@ -35,9 +35,6 @@ def main():
     end_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print("-" * 50)
     print(f"[{end_time}] GPU Benchmark completed")
-    print(f"Images generated: {results['images_generated']}")
-    print(f"Max temperature: {results['max_temp']}°C")
-    print(f"Avg temperature: {results['avg_temp']}°C")
 
 if __name__ == "__main__":
     main()

@@ -49,16 +49,8 @@ def upload_benchmark_results(image_count, max_temp, avg_temp):
         "avg_heat": int(avg_temp),
         "country": flag_emoji
     }
-    
-    # Print the data being uploaded
-    print("\nUploading the following data to Supabase:")
-    for key, value in benchmark_results.items():
-        print(f"  {key}: {value}")
-    
     # Upload to Supabase using REST API
     try:
-        print("\nConnecting to Supabase...")
-        
         # Direct REST API endpoint for the table
         api_url = f"{SUPABASE_URL}/rest/v1/benchmark"
         
@@ -76,8 +68,7 @@ def upload_benchmark_results(image_count, max_temp, avg_temp):
         
         # Check if successful
         if response.status_code in (200, 201):
-            print(f"✅ Results successfully uploaded to Supabase! {flag_emoji}")
-            return True, "Benchmark results uploaded successfully"
+            return True
         else:
             error_message = f"Error: {response.text}"
             print(f"❌ {error_message}")
