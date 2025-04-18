@@ -1,0 +1,7 @@
+GPU Benchmark - 2025-04-19_00-18-34
+Device: NVIDIA GeForce RTX 3090
+Benchmark duration: 10 seconds
+Prompt: a photo of an astronaut riding a horse on mars
+--------------------------------------------------
+
+DETAILED LOG:
