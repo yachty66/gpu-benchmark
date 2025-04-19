@@ -1,38 +1,42 @@
-# gpu-benchmark
+# GPU Benchmark
 
-## what
+A simple CLI tool to benchmark your GPU's performance with Stable Diffusion and compare it on our leaderboard.
 
-This is GPU benchmark tool
+![GPU Benchmark Leaderboard](https://path-to-screenshot.png)
 
-1. Performance measurement - How fast can the GPU complete specific tasks?
-2. Health/stability testing - Can the GPU operate reliably under sustained load?
+## Installation
 
-Things which are important for the project:
+```bash
+pip install gpu-benchmark
+```
 
-1. needs to be CLI based only because GPU users often dont have a monitor available for their GPU
-2. super easy to run - literally just pip install and then running the package
-3. Frontend with leaderboard to compare results in the long run
+## Usage
 
-## current most popular benchmarks
+Run the benchmark (takes ˜5 minutes):
 
-- futuremark/3dmark
-- furemark
-- FurMark for stress test
-- 3dMark for rendering
-- GPU-Z to see if it's legit
-- MSI Afterburner – Overclock, benchmark, monitor tool
-- Unigine Heaven – GPU Benchmark/stress test
-- Unigine Superposition – GPU Benchmark/stress test
-- Blender – Rendering benchmark
-- 3DMark Time Spy - DirectX 12 benchmark
-- 3DMark Fire Strike - DirectX 11 benchmark
-- Furmark – OpenGL benchmark/stress test
-- Passmark – Comprehensive benchmark
-- PCMark– Comprehensive benchmark
-- Novabench – Comprehensive benchmark
-- SiSoft Sandra – Comprehensive benchmark
-- gpu-z
+```bash
+gpu-benchmark
+```
 
-## notes
+The tool will:
+1. Load a Stable Diffusion pipeline
+2. Generate images for 5 minutes
+3. Counts image generations and track GPU temperature
+4. Upload results to the leaderboard at [United Compute Benchmark](https://www.unitedcompute.ai/gpu-benchmark)
 
-now i need to either make a package which is a wrapper around all of this exisintg benchmarks and runs them or i make a separate package which runs different llms and image gen models
+## What it measures
+
+- **Images Generated**: Number of Stable Diffusion images generated in 10 seconds
+- **Max Heat**: Maximum GPU temperature reached (°C)
+- **Avg Heat**: Average GPU temperature during the benchmark (°C)
+- **Country**: Your location (detected automatically)
+
+## Requirements
+
+- CUDA-compatible NVIDIA GPU
+- Python 3.8+
+- Internet connection (for results submission - which is not needed, you can run the test without the internet as well, but it will not be displayed online)
+
+## License
+
+Coming soon

@@ -1,7 +1,22 @@
 [project]
 name = "gpu_benchmark"
-version = "0.1.1"
-dependencies = []
+version = "0.1.5"
+description = "GPU benchmarking tool using Stable Diffusion"
+readme = "README.md"
+authors = [
+    {name = "Max Hager", email = "maxhager28@gmail.com"}
+]
+dependencies = [
+    "torch",
+    "tqdm",
+    "diffusers",
+    "transformers",
+    "accelerate",
+    "pynvml",
+    "supabase",
+    "python-dotenv",
+    "colorama"
+]
 
 [project.scripts]
 gpu-benchmark = "gpu_benchmark.main:main"
