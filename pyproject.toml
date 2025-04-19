@@ -13,9 +13,7 @@ dependencies = [
     "transformers",
     "accelerate",
     "pynvml",
-    "supabase",
-    "python-dotenv",
-    "colorama"
+    "supabase"
 ]
 
 [project.scripts]

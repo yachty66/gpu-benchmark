@@ -3,8 +3,6 @@ import torch
 import time
 from tqdm import tqdm
 import pynvml
-import datetime
-import os
 from diffusers import StableDiffusionPipeline
 
 def load_pipeline():
@@ -18,7 +16,7 @@ def load_pipeline():
     pipe = pipe.to("cuda")
     return pipe
 
-def run_benchmark(pipe, duration=10):
+def run_benchmark(pipe, duration):
     """Run the GPU benchmark for the specified duration in seconds."""
     # Initialize NVIDIA Management Library
     pynvml.nvmlInit()

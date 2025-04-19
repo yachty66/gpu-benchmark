@@ -12,7 +12,7 @@ pip install gpu-benchmark
 
 ## Usage
 
-Run the benchmark (takes ˜5 minutes):
+Run the benchmark (takes 5 minutes after the pipeline is loaded):
 
 ```bash
 gpu-benchmark
@@ -26,7 +26,7 @@ The tool will:
 
 ## What it measures
 
-- **Images Generated**: Number of Stable Diffusion images generated in 10 seconds
+- **Images Generated**: Number of Stable Diffusion images generated in 5 minutes
 - **Max Heat**: Maximum GPU temperature reached (°C)
 - **Avg Heat**: Average GPU temperature during the benchmark (°C)
 - **Country**: Your location (detected automatically)
@@ -36,7 +36,3 @@ The tool will:
 - CUDA-compatible NVIDIA GPU
 - Python 3.8+
 - Internet connection (for results submission - which is not needed, you can run the test without the internet as well, but it will not be displayed online)
-
-## License
-
-Coming soon

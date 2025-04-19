@@ -1,17 +1,15 @@
 # src/gpu_benchmark/main.py
-import argparse
 from .benchmark import load_pipeline, run_benchmark
 from .database import upload_benchmark_results
-import datetime
 
 def main():
     """Entry point for the GPU benchmark command-line tool."""
     # Simple start message
     print("GPU Benchmark starting...")
-    print("This benchmark will run for 10 seconds")
+    print("This benchmark will run for 5 minutes")
     
     # Fixed duration
-    duration = 10  # 10 seconds
+    duration = 300  # 300 seconds
     
     print("Loading Stable Diffusion pipeline...")
     pipe = load_pipeline()

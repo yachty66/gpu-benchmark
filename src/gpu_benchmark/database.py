@@ -35,7 +35,7 @@ def upload_benchmark_results(image_count, max_temp, avg_temp):
         avg_temp: Average GPU temperature recorded
         
     Returns:
-        tuple: (success, message)
+        tuple: (success, message, record_id)
     """
     # Get country flag
     flag_emoji = get_country_flag()
@@ -54,7 +54,7 @@ def upload_benchmark_results(image_count, max_temp, avg_temp):
         # Direct REST API endpoint for the table
         api_url = f"{SUPABASE_URL}/rest/v1/benchmark"
         
-        # Make the request with auth headers
+        # Make the request with auth headers - change Prefer header to get response data
         response = requests.post(
             api_url,
             json=benchmark_results,
@@ -62,22 +62,32 @@ def upload_benchmark_results(image_count, max_temp, avg_temp):
                 "Content-Type": "application/json",
                 "apikey": SUPABASE_ANON_KEY,
                 "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
-                "Prefer": "return=minimal"
+                "Prefer": "return=representation"  # Changed from minimal to get data back
             }
         )
         
         # Check if successful
         if response.status_code in (200, 201):
-            return True
+            # Parse the response to get the ID
+            try:
+                record_data = response.json()
+                if isinstance(record_data, list) and len(record_data) > 0:
+                    record_id = record_data[0].get('id')
+                    print(f"✅ Results uploaded successfully to leaderboard!")
+                    print(f"Your ID at http://localhost:3000/gpu-benchmark: {record_id}")
+                    return True, "Upload successful", record_id
+                else:
+                    return True, "Upload successful, but couldn't retrieve ID", None
+            except Exception as e:
+                return True, f"Upload successful, but error parsing response: {e}", None
         else:
             error_message = f"Error: {response.text}"
             print(f"❌ {error_message}")
-            return False, error_message
+            return False, error_message, None
             
     except Exception as e:
-        error_message = f"Error uploading to Supabase: {e}"
+        error_message = f"Error uploading submitting to leaderboard: {e}"
         print(f"❌ {error_message}")
         print("\nTroubleshooting tips:")
         print("1. Check your network connection")
-        print("2. Verify Supabase service is running")
-        return False, error_message
+        return False, error_message, None
