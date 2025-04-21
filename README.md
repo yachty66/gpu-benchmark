@@ -1,6 +1,6 @@
 # GPU Benchmark by [United Compute](https://www.unitedcompute.ai)
 
-A simple CLI tool to benchmark your GPU's performance with Stable Diffusion and compare results on our global leaderboard.
+A simple CLI tool to benchmark your GPU's performance with Stable Diffusion and compare results in our global benchmark results.
 
 ![United Compute Logo](https://www.unitedcompute.ai/logo.png)
 
@@ -22,7 +22,7 @@ The tool will:
 1. Load a Stable Diffusion pipeline
 2. Generate images for 5 minutes
 3. Count image generations and track GPU temperature
-4. Upload results to the [United Compute Benchmark Leaderboard](https://www.unitedcompute.ai/gpu-benchmark)
+4. Upload results to the [United Compute Benchmark Results](https://www.unitedcompute.ai/gpu-benchmark)
 
 ## What it measures
 
@@ -40,4 +40,4 @@ The tool will:
 ## Links
 
 - [Official Website](https://www.unitedcompute.ai)
-- [GPU Benchmark Leaderboard](https://www.unitedcompute.ai/gpu-benchmark)
+- [GPU Benchmark Results](https://www.unitedcompute.ai/gpu-benchmark)

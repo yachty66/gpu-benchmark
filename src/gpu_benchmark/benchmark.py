@@ -4,6 +4,8 @@ import time
 from tqdm import tqdm
 import pynvml
 from diffusers import StableDiffusionPipeline
+import platform
+import re
 
 def load_pipeline():
     """Load the Stable Diffusion pipeline and return it."""    
@@ -87,6 +89,33 @@ def run_benchmark(pipe, duration):
         avg_temp = sum(temp_readings) / len(temp_readings)
         max_temp = max(temp_readings)
         
+        # Get GPU power info
+        try:
+            power_usage = round(pynvml.nvmlDeviceGetPowerUsage(handle) / 1000.0, 2)  # mW to W with 2 decimal places
+        except:
+            power_usage = None
+        
+        # Get GPU memory info
+        try:
+            meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
+            gpu_memory_total = round(meminfo.total / (1024 * 1024 * 1024), 2)  # bytes to GB
+        except:
+            gpu_memory_total = None
+        
+        # Get platform info
+        os_platform = platform.system()
+        os_version = platform.version()
+        
+        # Extract just the Ubuntu version
+        ubuntu_match = re.search(r'(\d+\.\d+\.\d+-Ubuntu)', os_version)
+        platform_info = ubuntu_match.group(1) if ubuntu_match else f"{os_platform} {os_version}"
+        
+        # Get CUDA version (acceleration)
+        cuda_version = f"CUDA {torch.version.cuda}" if torch.cuda.is_available() else "N/A"
+        
+        # Get torch version
+        torch_version = torch.__version__
+        
         # Clean up
         pynvml.nvmlShutdown()
 
@@ -97,7 +126,12 @@ def run_benchmark(pipe, duration):
             "avg_temp": avg_temp,
             "elapsed_time": elapsed,
             "avg_time_ms": avg_time_ms,
-            "gpu_utilization": (total_gpu_time/1000)/elapsed*100
+            "gpu_utilization": (total_gpu_time/1000)/elapsed*100,
+            "gpu_power_watts": power_usage,
+            "gpu_memory_total": gpu_memory_total,
+            "platform": platform_info,
+            "acceleration": cuda_version,
+            "torch_version": torch_version
         }
     
     except KeyboardInterrupt:

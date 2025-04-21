@@ -27,12 +27,17 @@ def main():
     print(f"Avg GPU Temperature: {results['avg_temp']:.1f}°C")
     print("="*50)
     
-    print("\nSubmitting to leaderboard...")
+    print("\nSubmitting to benchmark results...")
     # Upload results to Supabase
     upload_benchmark_results(
         image_count=results['images_generated'],
         max_temp=results['max_temp'],
-        avg_temp=results['avg_temp']
+        avg_temp=results['avg_temp'],
+        gpu_power_watts=results.get('gpu_power_watts'),
+        gpu_memory_total=results.get('gpu_memory_total'),
+        platform=results.get('platform'),
+        acceleration=results.get('acceleration'),
+        torch_version=results.get('torch_version')
     )
     
     print("Benchmark completed")

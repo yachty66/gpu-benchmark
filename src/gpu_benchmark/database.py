@@ -26,13 +26,14 @@ def get_country_flag():
         print(f"Error getting country info: {e}")
         return "🏳️"  # White flag for unknown
 
-def upload_benchmark_results(image_count, max_temp, avg_temp):
+def upload_benchmark_results(image_count, max_temp, avg_temp, **kwargs):
     """Upload benchmark results to Supabase database.
     
     Args:
         image_count: Number of images generated during benchmark
         max_temp: Maximum GPU temperature recorded
         avg_temp: Average GPU temperature recorded
+        **kwargs: Additional fields to upload
         
     Returns:
         tuple: (success, message, record_id)
@@ -47,8 +48,19 @@ def upload_benchmark_results(image_count, max_temp, avg_temp):
         "number_images_generated": image_count,
         "max_heat": int(max_temp),
         "avg_heat": int(avg_temp),
-        "country": flag_emoji
+        "country": flag_emoji,
     }
+    
+    # Add additional fields if provided
+    additional_fields = [
+        "gpu_power_watts", "gpu_memory_total", "platform", 
+        "acceleration", "torch_version"
+    ]
+    
+    for field in additional_fields:
+        if field in kwargs and kwargs[field] is not None:
+            benchmark_results[field] = kwargs[field]
+    
     # Upload to Supabase using REST API
     try:
         # Direct REST API endpoint for the table
@@ -73,8 +85,8 @@ def upload_benchmark_results(image_count, max_temp, avg_temp):
                 record_data = response.json()
                 if isinstance(record_data, list) and len(record_data) > 0:
                     record_id = record_data[0].get('id')
-                    print(f"✅ Results uploaded successfully to leaderboard!")
-                    print(f"Your ID at http://localhost:3000/gpu-benchmark: {record_id}")
+                    print(f"✅ Results uploaded successfully to benchmark results!")
+                    print(f"Your ID at www.unitedcompute.ai/gpu-benchmark: {record_id}")
                     return True, "Upload successful", record_id
                 else:
                     return True, "Upload successful, but couldn't retrieve ID", None
@@ -86,7 +98,7 @@ def upload_benchmark_results(image_count, max_temp, avg_temp):
             return False, error_message, None
             
     except Exception as e:
-        error_message = f"Error uploading submitting to leaderboard: {e}"
+        error_message = f"Error uploading submitting to benchmark results: {e}"
         print(f"❌ {error_message}")
         print("\nTroubleshooting tips:")
         print("1. Check your network connection")
