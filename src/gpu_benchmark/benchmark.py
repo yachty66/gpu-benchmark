@@ -119,8 +119,9 @@ def run_benchmark(pipe, duration):
         # Clean up
         pynvml.nvmlShutdown()
 
-        # Return benchmark results
+        # Return benchmark results with completed flag
         return {
+            "completed": True,  # Flag indicating the benchmark completed successfully
             "images_generated": image_count,
             "max_temp": max_temp,
             "avg_temp": avg_temp,
@@ -135,9 +136,19 @@ def run_benchmark(pipe, duration):
         }
     
     except KeyboardInterrupt:
-        # Return partial results
+        # Clean up and return partial results with completed flag set to False
+        pynvml.nvmlShutdown()
         return {
+            "completed": False,  # Flag indicating the benchmark was canceled
             "images_generated": image_count,
             "max_temp": max(temp_readings) if temp_readings else 0,
             "avg_temp": sum(temp_readings)/len(temp_readings) if temp_readings else 0
+        }
+    except Exception as e:
+        # Handle any other errors, clean up, and return error info
+        pynvml.nvmlShutdown()
+        print(f"Error during benchmark: {e}")
+        return {
+            "completed": False,  # Flag indicating the benchmark failed
+            "error": str(e)
         }
