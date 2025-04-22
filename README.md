@@ -18,11 +18,24 @@ Run the benchmark (takes 5 minutes after the pipeline is loaded):
 gpu-benchmark
 ```
 
+If you're running on a cloud provider, specify it with the `--provider` flag:
+
+```bash
+gpu-benchmark --provider RunPod
+```
+
 The tool will:
 1. Load a Stable Diffusion pipeline
 2. Generate images for 5 minutes
 3. Count image generations and track GPU temperature
 4. Upload results to the [United Compute Benchmark Results](https://www.unitedcompute.ai/gpu-benchmark)
+
+## Supported Cloud Providers
+
+Currently supported cloud providers:
+- RunPod
+
+Want to add another cloud provider? Please [create an issue](https://github.com/UnitedCompute/gpu-benchmark/issues/new) with the request.
 
 ## What it measures
 
@@ -30,6 +43,11 @@ The tool will:
 - **Max Heat**: Maximum GPU temperature reached (°C)
 - **Avg Heat**: Average GPU temperature during the benchmark (°C)
 - **Country**: Your location (detected automatically)
+- **GPU Power**: Power consumption in watts (W)
+- **GPU Memory**: Total GPU memory in gigabytes (GB)
+- **Platform**: Operating system information
+- **Acceleration**: CUDA version
+- **PyTorch Version**: PyTorch library version
 
 ## Requirements
 
