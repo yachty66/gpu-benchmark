@@ -21,7 +21,7 @@ gpu-benchmark
 If you're running on a cloud provider, specify it with the `--provider` flag:
 
 ```bash
-gpu-benchmark --provider RunPod
+gpu-benchmark --provider runpod
 ```
 
 The tool will:
@@ -29,13 +29,6 @@ The tool will:
 2. Generate images for 5 minutes
 3. Count image generations and track GPU temperature
 4. Upload results to the [United Compute Benchmark Results](https://www.unitedcompute.ai/gpu-benchmark)
-
-## Supported Cloud Providers
-
-Currently supported cloud providers:
-- RunPod
-
-Want to add another cloud provider? Please [create an issue](https://github.com/UnitedCompute/gpu-benchmark/issues/new) with the request.
 
 ## What it measures
 

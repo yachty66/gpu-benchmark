@@ -1,9 +1,18 @@
 # src/gpu_benchmark/main.py
 from .benchmark import load_pipeline, run_benchmark
 from .database import upload_benchmark_results
+import argparse
 
 def main():
     """Entry point for the GPU benchmark command-line tool."""
+    # Parse command-line arguments
+    parser = argparse.ArgumentParser(description="GPU Benchmark by United Compute")
+    parser.add_argument("--provider", type=str, help="Cloud provider (e.g., RunPod, AWS, GCP) or Private", default="Private")
+    args = parser.parse_args()
+    
+    # Convert provider to lowercase
+    provider = args.provider.lower()
+    
     # Simple start message
     print("GPU Benchmark starting...")
     print("This benchmark will run for 5 minutes")
@@ -37,10 +46,11 @@ def main():
             print(f"Acceleration: {results['acceleration']}")
         if results.get('torch_version'):
             print(f"PyTorch Version: {results['torch_version']}")
+        print(f"Provider: {provider}")
         print("="*50)
         
         print("\nSubmitting to benchmark results...")
-        # Upload results to Supabase
+        # Upload results to Supabase with the provider information (lowercase)
         upload_benchmark_results(
             image_count=results['images_generated'],
             max_temp=results['max_temp'],
@@ -49,7 +59,8 @@ def main():
             gpu_memory_total=results.get('gpu_memory_total'),
             platform=results.get('platform'),
             acceleration=results.get('acceleration'),
-            torch_version=results.get('torch_version')
+            torch_version=results.get('torch_version'),
+            cloud_provider=provider  # Use the lowercase provider
         )
         
         print("Benchmark completed")

@@ -26,13 +26,14 @@ def get_country_flag():
         print(f"Error getting country info: {e}")
         return "🏳️"  # White flag for unknown
 
-def upload_benchmark_results(image_count, max_temp, avg_temp, **kwargs):
+def upload_benchmark_results(image_count, max_temp, avg_temp, cloud_provider="Private", **kwargs):
     """Upload benchmark results to Supabase database.
     
     Args:
         image_count: Number of images generated during benchmark
         max_temp: Maximum GPU temperature recorded
         avg_temp: Average GPU temperature recorded
+        cloud_provider: Cloud provider name (default: "Private")
         **kwargs: Additional fields to upload
         
     Returns:
@@ -49,6 +50,7 @@ def upload_benchmark_results(image_count, max_temp, avg_temp, **kwargs):
         "max_heat": int(max_temp),
         "avg_heat": int(avg_temp),
         "country": flag_emoji,
+        "provider": cloud_provider  # Add the provider field
     }
     
     # Add additional fields if provided
