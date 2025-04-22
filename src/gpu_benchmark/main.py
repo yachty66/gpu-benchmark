@@ -27,6 +27,16 @@ def main():
         print(f"Images Generated: {results['images_generated']}")
         print(f"Max GPU Temperature: {results['max_temp']}°C")
         print(f"Avg GPU Temperature: {results['avg_temp']:.1f}°C")
+        if results.get('gpu_power_watts'):
+            print(f"GPU Power: {results['gpu_power_watts']}W")
+        if results.get('gpu_memory_total'):
+            print(f"GPU Memory: {results['gpu_memory_total']}GB")
+        if results.get('platform'):
+            print(f"Platform: {results['platform']}")
+        if results.get('acceleration'):
+            print(f"Acceleration: {results['acceleration']}")
+        if results.get('torch_version'):
+            print(f"PyTorch Version: {results['torch_version']}")
         print("="*50)
         
         print("\nSubmitting to benchmark results...")
