@@ -9,7 +9,7 @@ import re
 
 def load_pipeline():
     """Load the Stable Diffusion pipeline and return it."""    
-    model_id = "sd-legacy/stable-diffusion-v1-5"
+    model_id = "yachty66/stable-diffusion-v1-5"
     pipe = StableDiffusionPipeline.from_pretrained(
         model_id, 
         torch_dtype=torch.float16,
