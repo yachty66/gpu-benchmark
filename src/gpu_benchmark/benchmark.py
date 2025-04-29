@@ -7,6 +7,24 @@ from diffusers import StableDiffusionPipeline
 import platform
 import re
 
+def get_clean_platform():
+    os_platform = platform.system()
+    if os_platform == "Linux":
+        try:
+            with open("/etc/os-release") as f:
+                for line in f:
+                    if line.startswith("PRETTY_NAME="):
+                        return line.strip().split("=")[1].strip('"')
+        except Exception:
+            pass
+        return f"Linux {platform.release()}"
+    elif os_platform == "Windows":
+        return f"Windows {platform.release()}"
+    elif os_platform == "Darwin":
+        return f"macOS {platform.mac_ver()[0]}"
+    else:
+        return os_platform
+
 def load_pipeline():
     """Load the Stable Diffusion pipeline and return it."""    
     model_id = "yachty66/stable-diffusion-v1-5"
@@ -103,12 +121,7 @@ def run_benchmark(pipe, duration):
             gpu_memory_total = None
         
         # Get platform info
-        os_platform = platform.system()
-        os_version = platform.version()
-        
-        # Extract just the Ubuntu version
-        ubuntu_match = re.search(r'(\d+\.\d+\.\d+-Ubuntu)', os_version)
-        platform_info = ubuntu_match.group(1) if ubuntu_match else f"{os_platform} {os_version}"
+        platform_info = get_clean_platform()
         
         # Get CUDA version (acceleration)
         cuda_version = f"CUDA {torch.version.cuda}" if torch.cuda.is_available() else "N/A"
