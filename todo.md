@@ -1,3 +1,0 @@
-- my own weights
-- fix weird platform name
-- add support for sdxl as well https://www.reddit.com/r/LocalLLaMA/comments/1k3ygru/comment/mo8r3wv/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
