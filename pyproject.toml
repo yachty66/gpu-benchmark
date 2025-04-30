@@ -1,6 +1,6 @@
 [project]
 name = "gpu_benchmark"
-version = "0.2.0"
+version = "0.2.1"
 description = "GPU benchmarking tool using Stable Diffusion"
 readme = "README.md"
 authors = [

@@ -25,6 +25,7 @@ gpu-benchmark --provider runpod
 ```
 
 The tool will:
+
 1. Load a Stable Diffusion pipeline
 2. Generate images for 5 minutes
 3. Count image generations and track GPU temperature
@@ -45,6 +46,7 @@ The tool will:
 ## Requirements
 
 - CUDA-compatible NVIDIA GPU
+- Minimum 4GB VRAM (benchmark uses ~3.3GB VRAM in fp16 mode)
 - Python 3.8+
 - Internet connection (for results submission - although you can run the test offline too)
 
