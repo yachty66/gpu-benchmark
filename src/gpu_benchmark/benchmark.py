@@ -47,6 +47,7 @@ def run_benchmark(pipe, duration):
     image_count = 0
     total_gpu_time = 0
     temp_readings = []
+    power_readings = []
     
     # Start benchmark
     start_time = time.time()
@@ -86,6 +87,13 @@ def run_benchmark(pipe, duration):
                 
                 # Update counter
                 image_count += 1
+                
+                # Sample power usage
+                try:
+                    current_power = pynvml.nvmlDeviceGetPowerUsage(handle) / 1000.0  # mW to W
+                    power_readings.append(current_power)
+                except:
+                    pass
                 
                 # Update progress bar
                 current_time = time.time()
@@ -133,6 +141,9 @@ def run_benchmark(pipe, duration):
         # Clean up
         pynvml.nvmlShutdown()
 
+        # Calculate average power
+        avg_power = round(sum(power_readings) / len(power_readings), 2) if power_readings else None
+
         # Return benchmark results with completed flag
         return {
             "completed": True,  # Flag indicating the benchmark completed successfully
@@ -142,7 +153,7 @@ def run_benchmark(pipe, duration):
             "elapsed_time": elapsed,
             "avg_time_ms": avg_time_ms,
             "gpu_utilization": (total_gpu_time/1000)/elapsed*100,
-            "gpu_power_watts": power_usage,
+            "gpu_power_watts": avg_power,
             "gpu_memory_total": gpu_memory_total,
             "platform": platform_info,
             "acceleration": cuda_version,

@@ -45,7 +45,7 @@ def upload_benchmark_results(image_count, max_temp, avg_temp, cloud_provider="Pr
     # Prepare benchmark results
     benchmark_results = {
         "created_at": datetime.datetime.now().isoformat(),
-        "gpu_type": torch.cuda.get_device_name(0),
+        "gpu_type": torch.cuda.get_device_name(torch.cuda.current_device()),
         "number_images_generated": image_count,
         "max_heat": int(max_temp),
         "avg_heat": int(avg_temp),
