@@ -40,7 +40,8 @@ def run_benchmark(pipe, duration):
     """Run the GPU benchmark for the specified duration in seconds."""
     # Initialize NVIDIA Management Library
     pynvml.nvmlInit()
-    handle = pynvml.nvmlDeviceGetHandleByIndex(0)
+    cuda_idx = torch.cuda.current_device()
+    handle = pynvml.nvmlDeviceGetHandleByIndex(cuda_idx)
     
     # Setup variables
     image_count = 0
