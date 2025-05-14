@@ -36,12 +36,26 @@ def load_pipeline():
     pipe = pipe.to("cuda")
     return pipe
 
+def get_nvml_device_handle():
+    """Get the correct NVML device handle for the GPU being used."""
+    pynvml.nvmlInit()
+    # Get the current CUDA device index
+    cuda_idx = torch.cuda.current_device()
+    
+    try:
+        # Try to get the handle for the corresponding GPU
+        handle = pynvml.nvmlDeviceGetHandleByIndex(cuda_idx)
+        # Test if the handle is valid by trying to get temperature
+        pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
+        return handle
+    except Exception as e:
+        print(f"Warning: Could not get handle for GPU {cuda_idx}, falling back to GPU 0")
+        return pynvml.nvmlDeviceGetHandleByIndex(0)
+
 def run_benchmark(pipe, duration):
     """Run the GPU benchmark for the specified duration in seconds."""
-    # Initialize NVIDIA Management Library
-    pynvml.nvmlInit()
-    cuda_idx = torch.cuda.current_device()
-    handle = pynvml.nvmlDeviceGetHandleByIndex(cuda_idx)
+    # Get the correct NVML handle for the GPU being used
+    handle = get_nvml_device_handle()
     
     # Setup variables
     image_count = 0

@@ -8,7 +8,12 @@ def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser(description="GPU Benchmark by United Compute")
     parser.add_argument("--provider", type=str, help="Cloud provider (e.g., RunPod, AWS, GCP) or Private", default="Private")
+    parser.add_argument("--gpu", type=int, help="GPU device index to use (defaults to CUDA_VISIBLE_DEVICES or 0)", default=None)
     args = parser.parse_args()
+    
+    # If GPU device is specified, set it
+    if args.gpu is not None:
+        torch.cuda.set_device(args.gpu)
     
     # Convert provider to lowercase
     provider = args.provider.lower()

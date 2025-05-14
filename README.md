@@ -18,10 +18,23 @@ Run the benchmark (takes 5 minutes after the pipeline is loaded):
 gpu-benchmark
 ```
 
-If you're running on a cloud provider, specify it with the `--provider` flag:
+### Optional Arguments
 
+If you're running on a cloud provider, specify it with the `--provider` flag:
 ```bash
 gpu-benchmark --provider runpod
+```
+
+For multi-GPU systems, you can select a specific GPU in two ways:
+
+1. Using the `--gpu` flag:
+```bash
+gpu-benchmark --gpu 1  # Uses GPU index 1
+```
+
+2. Using CUDA_VISIBLE_DEVICES:
+```bash
+CUDA_VISIBLE_DEVICES=1 gpu-benchmark  # Uses GPU index 1
 ```
 
 The tool will:
