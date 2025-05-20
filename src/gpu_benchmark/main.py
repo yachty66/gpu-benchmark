@@ -1,5 +1,5 @@
 # src/gpu_benchmark/main.py
-from .benchmarks import stable_diffusion
+from .benchmarks import stable_diffusion_1_5
 from .benchmark import load_pipeline, run_benchmark
 from .database import upload_benchmark_results
 import argparse
@@ -8,8 +8,8 @@ import torch
 # Import benchmark runners dynamically or add specific imports here later
 # For now, let's assume functions like run_stable_diffusion_benchmark, run_llm_benchmark
 # will be available from src.gpu_benchmark.benchmarks
-from .benchmarks import stable_diffusion # This will be created
-from .utils import get_clean_platform # This will be created, assuming get_clean_platform moves to utils
+# from .benchmarks import stable_diffusion # This will be created
+# from .utils import get_clean_platform # This will be created, assuming get_clean_platform moves to utils
 
 def main():
     """Entry point for the GPU benchmark command-line tool."""
@@ -38,19 +38,19 @@ def main():
     if args.model == "stable-diffusion":
         print("Loading Stable Diffusion pipeline...")
         # This will be moved to stable_diffusion.py
-        pipe = stable_diffusion.load_sd_pipeline() 
+        pipe = stable_diffusion_1_5.load_sd_pipeline() 
         print("Pipeline loaded successfully!")
         
         print("Running Stable Diffusion benchmark...")
-        results = stable_diffusion.run_sd_benchmark(pipe=pipe, duration=duration)
+        results = stable_diffusion_1_5.run_sd_benchmark(pipe=pipe, duration=duration)
     elif args.model == "llm":
         print("Loading LLM model...")
         # This will be a new function in llm.py
-        model = stable_diffusion.load_llm_model() 
+        model = stable_diffusion_1_5.load_llm_model() 
         print("LLM Model loaded successfully!")
 
         print("Running LLM benchmark...")
-        results = stable_diffusion.run_llm_benchmark(model=model, duration=duration)
+        results = stable_diffusion_1_5.run_llm_benchmark(model=model, duration=duration)
     else:
         print(f"Error: Model {args.model} not supported.")
         return

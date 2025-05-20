@@ -7,27 +7,18 @@ from diffusers import StableDiffusionPipeline
 import os
 from ..utils import get_nvml_device_handle, get_system_info # Adjusted import
 
+
 def load_sd_pipeline():
     """Load the Stable Diffusion pipeline and return it."""    
-    model_id = "runwayml/stable-diffusion-v1-5" # Using runwayml as yachty66 was not found in a quick search, can be changed back
-    # model_id = "yachty66/stable-diffusion-v1-5" 
-    try:
-        pipe = StableDiffusionPipeline.from_pretrained(
-            model_id, 
-            torch_dtype=torch.float16,
-            low_cpu_mem_usage=True,
-            # local_files_only=True # Consider adding if models are cached
-        )
-        pipe = pipe.to("cuda" if torch.cuda.is_available() else "cpu")
-        if not torch.cuda.is_available():
-            print("Warning: CUDA not available, Stable Diffusion will run on CPU.")
-        return pipe
-    except Exception as e:
-        print(f"Error loading Stable Diffusion pipeline: {e}")
-        print("Please ensure you have a working internet connection to download the model,")
-        print("or that the model is available in your Hugging Face cache.")
-        print(f"Attempted to load model: {model_id}")
-        return None
+    model_id = "yachty66/stable-diffusion-v1-5" 
+    pipe = StableDiffusionPipeline.from_pretrained(
+        model_id, 
+        torch_dtype=torch.float16,
+        low_cpu_mem_usage=True
+    )
+    pipe = pipe.to("cuda")
+    return pipe
+
 
 
 def run_sd_benchmark(pipe, duration):
