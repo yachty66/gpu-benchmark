@@ -25,16 +25,11 @@ If you're running on a cloud provider, specify it with the `--provider` flag:
 gpu-benchmark --provider runpod
 ```
 
-For multi-GPU systems, you can select a specific GPU in two ways:
+For multi-GPU systems, you can select a specific GPU like this:
 
 1. Using the `--gpu` flag:
 ```bash
 gpu-benchmark --gpu 1  # Uses GPU index 1
-```
-
-2. Using CUDA_VISIBLE_DEVICES:
-```bash
-CUDA_VISIBLE_DEVICES=1 gpu-benchmark  # Uses GPU index 1
 ```
 
 The tool will:

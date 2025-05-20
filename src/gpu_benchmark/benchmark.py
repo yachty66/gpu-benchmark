@@ -5,7 +5,7 @@ from tqdm import tqdm
 import pynvml
 from diffusers import StableDiffusionPipeline
 import platform
-import re
+import os
 
 def get_clean_platform():
     os_platform = platform.system()
@@ -39,18 +39,22 @@ def load_pipeline():
 def get_nvml_device_handle():
     """Get the correct NVML device handle for the GPU being used."""
     pynvml.nvmlInit()
-    # Get the current CUDA device index
-    cuda_idx = torch.cuda.current_device()
     
-    try:
-        # Try to get the handle for the corresponding GPU
-        handle = pynvml.nvmlDeviceGetHandleByIndex(cuda_idx)
-        # Test if the handle is valid by trying to get temperature
-        pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
-        return handle
-    except Exception as e:
-        print(f"Warning: Could not get handle for GPU {cuda_idx}, falling back to GPU 0")
-        return pynvml.nvmlDeviceGetHandleByIndex(0)
+    # Check CUDA_VISIBLE_DEVICES first
+    cuda_visible_devices = os.environ.get('CUDA_VISIBLE_DEVICES')
+    if cuda_visible_devices is not None:
+        try:
+            # When CUDA_VISIBLE_DEVICES is set, the first (and only) visible GPU
+            # becomes index 0 to CUDA, but we need to use the original index for NVML
+            original_gpu_index = int(cuda_visible_devices.split(',')[0])
+            handle = pynvml.nvmlDeviceGetHandleByIndex(original_gpu_index)
+            return handle
+        except (ValueError, IndexError):
+            print(f"Warning: Could not parse CUDA_VISIBLE_DEVICES={cuda_visible_devices}")
+    
+    # Fallback to current CUDA device
+    cuda_idx = torch.cuda.current_device()
+    return pynvml.nvmlDeviceGetHandleByIndex(cuda_idx)
 
 def run_benchmark(pipe, duration):
     """Run the GPU benchmark for the specified duration in seconds."""
