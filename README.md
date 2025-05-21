@@ -62,3 +62,13 @@ The tool will:
 
 - [Official Website](https://www.unitedcompute.ai)
 - [GPU Benchmark Results](https://www.unitedcompute.ai/gpu-benchmark)
+
+## Todos
+
+- change table name from benchmark to sd - and change in frontend accordingly
+- change column name in benchmark table and change code in frontend accordingly
+- make the flag sd15 and not stable diffusion only how it currently is
+- check how max and avg heat is getting meassured 
+- check how power watts are getting meassured
+- make sure prints are correct
+- make it a package
