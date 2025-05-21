@@ -26,52 +26,66 @@ def get_country_flag():
         print(f"Error getting country info: {e}")
         return "🏳️"  # White flag for unknown
 
-def upload_benchmark_results(image_count, max_temp, avg_temp, cloud_provider="Private", **kwargs):
+def upload_benchmark_results(model_name: str, primary_metric_value: int, max_temp: float, avg_temp: float, cloud_provider: str = "Private", **kwargs):
     """Upload benchmark results to Supabase database.
     
     Args:
-        image_count: Number of images generated during benchmark
-        max_temp: Maximum GPU temperature recorded
-        avg_temp: Average GPU temperature recorded
-        cloud_provider: Cloud provider name (default: "Private")
-        **kwargs: Additional fields to upload
+        model_name: Name of the model ("stable-diffusion", "llm") to determine the target table.
+        primary_metric_value: Value for the primary metric (e.g., images generated or tokens processed),
+                              which will be stored in the 'result' column.
+        max_temp: Maximum GPU temperature recorded.
+        avg_temp: Average GPU temperature recorded.
+        cloud_provider: Cloud provider name (default: "Private").
+        **kwargs: Additional fields to upload (e.g., gpu_power_watts, gpu_memory_total).
         
     Returns:
         tuple: (success, message, record_id)
     """
+    
+    table_name = ""
+    metric_column_name = "result" # Generic column name for the primary metric
+
+    if model_name == "stable-diffusion":
+        table_name = "benchmark"
+    elif model_name == "llm":
+        # For "llm" type, we target "deepseek-r1-1-5b" table as previously specified
+        table_name = "deepseek-r1-1-5b" 
+    else:
+        err_msg = f"Unsupported model_name '{model_name}' for database upload."
+        print(f"❌ {err_msg}")
+        return False, err_msg, None
+
     # Get country flag
     flag_emoji = get_country_flag()
     
     # Prepare benchmark results
-    benchmark_results = {
+    benchmark_data = {
         "created_at": datetime.datetime.now().isoformat(),
-        "gpu_type": torch.cuda.get_device_name(torch.cuda.current_device()),
-        "number_images_generated": image_count,
-        "max_heat": int(max_temp),
-        "avg_heat": int(avg_temp),
+        "gpu_type": torch.cuda.get_device_name(torch.cuda.current_device()) if torch.cuda.is_available() else "N/A",
+        metric_column_name: primary_metric_value, # Using "result" as the column name
+        "max_heat": int(max_temp) if max_temp is not None else None,
+        "avg_heat": int(avg_temp) if avg_temp is not None else None,
         "country": flag_emoji,
-        "provider": cloud_provider  # Add the provider field
+        "provider": cloud_provider
     }
     
-    # Add additional fields if provided
-    additional_fields = [
+    # Add additional fields if provided.
+    additional_fields_expected = [
         "gpu_power_watts", "gpu_memory_total", "platform", 
         "acceleration", "torch_version"
     ]
     
-    for field in additional_fields:
+    for field in additional_fields_expected:
         if field in kwargs and kwargs[field] is not None:
-            benchmark_results[field] = kwargs[field]
+            benchmark_data[field] = kwargs[field]
     
     # Upload to Supabase using REST API
     try:
-        # Direct REST API endpoint for the table
-        api_url = f"{SUPABASE_URL}/rest/v1/benchmark"
+        api_url = f"{SUPABASE_URL}/rest/v1/{table_name}" # Dynamic table name
         
-        # Make the request with auth headers - change Prefer header to get response data
         response = requests.post(
             api_url,
-            json=benchmark_results,
+            json=benchmark_data,
             headers={
                 "Content-Type": "application/json",
                 "apikey": SUPABASE_ANON_KEY,

@@ -1,5 +1,5 @@
 # src/gpu_benchmark/main.py
-from .benchmarks import stable_diffusion_1_5
+from .benchmarks import stable_diffusion_1_5, llm
 from .benchmark import load_pipeline, run_benchmark
 from .database import upload_benchmark_results
 import argparse
@@ -32,7 +32,7 @@ def main():
     print("This benchmark will run for 5 minutes")
     
     # Fixed duration
-    duration = 300  # 300 seconds
+    duration = 10  # 300 seconds
     
     results = None
     if args.model == "stable-diffusion":
@@ -46,55 +46,49 @@ def main():
     elif args.model == "llm":
         print("Loading LLM model...")
         # This will be a new function in llm.py
-        model = stable_diffusion_1_5.load_llm_model() 
-        print("LLM Model loaded successfully!")
-
+        model_payload_dict = llm.load_llm_model() 
+        
         print("Running LLM benchmark...")
-        results = stable_diffusion_1_5.run_llm_benchmark(model=model, duration=duration)
+        results = llm.run_llm_benchmark(model_payload=model_payload_dict, duration=duration)
     else:
         print(f"Error: Model {args.model} not supported.")
         return
 
     # Only proceed if the benchmark completed successfully (not canceled)
     if results and results.get("completed", False):
-        # Print the key metrics immediately after benchmark completion
-        print("\n" + "="*50)
-        print("BENCHMARK RESULTS:")
-        print(f"Images Generated: {results['images_generated']}")
-        print(f"Max GPU Temperature: {results['max_temp']}°C")
-        print(f"Avg GPU Temperature: {results['avg_temp']:.1f}°C")
-        if results.get('gpu_power_watts'):
-            print(f"GPU Power: {results['gpu_power_watts']}W")
-        if results.get('gpu_memory_total'):
-            print(f"GPU Memory: {results['gpu_memory_total']}GB")
-        if results.get('platform'):
-            print(f"Platform: {results['platform']}")
-        if results.get('acceleration'):
-            print(f"Acceleration: {results['acceleration']}")
-        if results.get('torch_version'):
-            print(f"PyTorch Version: {results['torch_version']}")
-        print(f"Provider: {provider}")
-        print("="*50)
+        # The detailed print block is removed.
+        # Variables are still prepared for the upload_benchmark_results call.
+        primary_metric_val = None
+        max_temp_val = None
+        avg_temp_val = None
+        gpu_memory_val = None
+
+        if args.model == "stable-diffusion":
+            primary_metric_val = results.get('images_generated')
+            max_temp_val = results.get('max_temp')
+            avg_temp_val = results.get('avg_temp')
+            gpu_memory_val = results.get('gpu_memory_total')
+        elif args.model == "llm":
+            primary_metric_val = results.get('tokens_processed')
+            max_temp_val = results.get('max_temp_c')
+            avg_temp_val = results.get('avg_temp_c')
+            gpu_memory_val = results.get('gpu_memory_total_gb')
         
-        print("\nSubmitting to benchmark results...")
-        # Upload results to Supabase with the provider information (lowercase)
-        # The upload_benchmark_results function might need to be generalized
-        # or each benchmark might return a common set of keys.
+        # The upload_benchmark_results function will print the success message and ID.
         upload_benchmark_results(
-            image_count=results.get('images_generated'), # This key might be SD specific
-            # Consider making returned keys more generic, e.g., 'items_processed'
-            max_temp=results['max_temp'],
-            avg_temp=results['avg_temp'],
+            model_name=args.model,
+            primary_metric_value=primary_metric_val,
+            max_temp=max_temp_val,
+            avg_temp=avg_temp_val,
+            cloud_provider=provider,
             gpu_power_watts=results.get('gpu_power_watts'),
-            gpu_memory_total=results.get('gpu_memory_total'),
-            platform=results.get('platform'), # platform can be fetched by a utility
-            acceleration=results.get('acceleration'), # acceleration can be fetched by a utility
-            torch_version=results.get('torch_version'), # torch_version can be fetched by a utility
-            cloud_provider=provider,  # Use the lowercase provider
-            model_name=args.model # Add model name to results
+            gpu_memory_total=gpu_memory_val, 
+            platform=results.get('platform'),
+            acceleration=results.get('acceleration'),
+            torch_version=results.get('torch_version')
         )
         
-        print("Benchmark completed")
+        print("Benchmark completed") # Final confirmation message
     elif results and results.get("error"):
         print(f"\nBenchmark failed: {results.get('error')}")
     elif results is None and args.model != "stable-diffusion" and args.model != "llm": # Model not supported
