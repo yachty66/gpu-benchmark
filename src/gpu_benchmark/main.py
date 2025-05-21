@@ -38,11 +38,11 @@ def main():
     if args.model == "stable-diffusion":
         print("Loading Stable Diffusion pipeline...")
         # This will be moved to stable_diffusion.py
-        pipe = stable_diffusion_1_5.load_sd_pipeline() 
+        pipe = stable_diffusion_1_5.load_pipeline() 
         print("Pipeline loaded successfully!")
         
         print("Running Stable Diffusion benchmark...")
-        results = stable_diffusion_1_5.run_sd_benchmark(pipe=pipe, duration=duration)
+        results = stable_diffusion_1_5.run_benchmark(pipe=pipe, duration=duration)
     elif args.model == "llm":
         print("Loading LLM model...")
         # This will be a new function in llm.py
