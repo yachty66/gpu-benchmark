@@ -65,9 +65,9 @@ The tool will:
 
 ## Todos
 
-- change table name from benchmark to sd - and change in frontend accordingly
-- change column name in benchmark table and change code in frontend accordingly
-- make the flag sd15 and not stable diffusion only how it currently is
+- change table name from benchmark to sd - and change in frontend accordingly - 
+- change column name in benchmark table and change code in frontend accordingly -
+- make the flag sd15 and not stable diffusion only how it currently is 
 - check how max and avg heat is getting meassured 
 - check how power watts are getting meassured
 - make sure prints are correct

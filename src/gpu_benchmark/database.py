@@ -30,7 +30,7 @@ def upload_benchmark_results(model_name: str, primary_metric_value: int, max_tem
     """Upload benchmark results to Supabase database.
     
     Args:
-        model_name: Name of the model ("stable-diffusion", "llm") to determine the target table.
+        model_name: Name of the model ("stable-diffusion-1-5", "llm") to determine the target table.
         primary_metric_value: Value for the primary metric (e.g., images generated or tokens processed),
                               which will be stored in the 'result' column.
         max_temp: Maximum GPU temperature recorded.
@@ -45,10 +45,9 @@ def upload_benchmark_results(model_name: str, primary_metric_value: int, max_tem
     table_name = ""
     metric_column_name = "result" # Generic column name for the primary metric
 
-    if model_name == "stable-diffusion":
-        table_name = "benchmark"
+    if model_name == "stable-diffusion-1-5":
+        table_name = "stable-diffusion-1-5"
     elif model_name == "llm":
-        # For "llm" type, we target "deepseek-r1-1-5b" table as previously specified
         table_name = "deepseek-r1-1-5b" 
     else:
         err_msg = f"Unsupported model_name '{model_name}' for database upload."
@@ -79,10 +78,9 @@ def upload_benchmark_results(model_name: str, primary_metric_value: int, max_tem
         if field in kwargs and kwargs[field] is not None:
             benchmark_data[field] = kwargs[field]
     
-    # Upload to Supabase using REST API
+    api_url = f"{SUPABASE_URL}/rest/v1/{table_name}" # Dynamic table name
+    
     try:
-        api_url = f"{SUPABASE_URL}/rest/v1/{table_name}" # Dynamic table name
-        
         response = requests.post(
             api_url,
             json=benchmark_data,
@@ -90,13 +88,11 @@ def upload_benchmark_results(model_name: str, primary_metric_value: int, max_tem
                 "Content-Type": "application/json",
                 "apikey": SUPABASE_ANON_KEY,
                 "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
-                "Prefer": "return=representation"  # Changed from minimal to get data back
+                "Prefer": "return=representation"
             }
         )
         
-        # Check if successful
         if response.status_code in (200, 201):
-            # Parse the response to get the ID
             try:
                 record_data = response.json()
                 if isinstance(record_data, list) and len(record_data) > 0:
@@ -105,17 +101,42 @@ def upload_benchmark_results(model_name: str, primary_metric_value: int, max_tem
                     print(f"Your ID at www.unitedcompute.ai/gpu-benchmark: {record_id}")
                     return True, "Upload successful", record_id
                 else:
+                    print(f"✅ Upload successful, but couldn't retrieve ID from response: {record_data}")
                     return True, "Upload successful, but couldn't retrieve ID", None
-            except Exception as e:
-                return True, f"Upload successful, but error parsing response: {e}", None
+            except ValueError as e: # Catch JSON decoding errors
+                print(f"✅ Upload reported success (status {response.status_code}), but failed to parse JSON response: {e}. Response text: '{response.text}'")
+                return True, f"Upload successful (status {response.status_code}), but error parsing response", None
         else:
-            error_message = f"Error: {response.text}"
-            print(f"❌ {error_message}")
+            error_details = f"Status Code: {response.status_code}. Response Body: '{response.text}'. Headers: {response.headers}"
+            error_message = f"Failed to upload results to Supabase. {error_details}"
+            print(f"❌ Database Upload Error: {error_message}")
+            if response.status_code == 400:
+                print("Hint (400 Bad Request): This might be due to a mismatch between the data sent and the table schema in Supabase (e.g., wrong data types for columns, missing required columns that are not nullable, or malformed JSON). Check the 'Response Body' above for specific column errors from Supabase.")
+            elif response.status_code == 401:
+                print("Hint (401 Unauthorized): Check if the Supabase ANON_KEY is correct and has the necessary INSERT permissions for the table. Review Row Level Security (RLS) policies on the table.")
+            elif response.status_code == 403:
+                 print("Hint (403 Forbidden): The request was understood, but refused. This often relates to permissions, possibly RLS policies or service-level API key permissions for insert operations on the target table.")
+            elif response.status_code == 404:
+                print(f"Hint (404 Not Found): Check if the table_name '{table_name}' is correct and the API endpoint '{api_url}' is valid. The table might not exist or the URL path could be wrong.")
             return False, error_message, None
             
-    except Exception as e:
-        error_message = f"Error uploading submitting to benchmark results: {e}"
+    except requests.exceptions.ConnectionError as e:
+        error_message = f"Network Connection Error: Failed to connect to Supabase at {SUPABASE_URL}. Details: {e}"
         print(f"❌ {error_message}")
-        print("\nTroubleshooting tips:")
-        print("1. Check your network connection")
+        print("Troubleshooting: Check your internet connection and firewall settings. Ensure Supabase services are operational.")
+        return False, error_message, None
+    except requests.exceptions.Timeout as e:
+        error_message = f"Request Timeout: The request to Supabase timed out. URL: {api_url}. Details: {e}"
+        print(f"❌ {error_message}")
+        print("Troubleshooting: Check your network connection. The Supabase server might be overloaded or slow to respond.")
+        return False, error_message, None
+    except requests.exceptions.RequestException as e: # Catches other requests-related errors (e.g., invalid URL)
+        error_message = f"Request Error: An error occurred during the request to Supabase. URL: {api_url}. Details: {type(e).__name__} - {e}"
+        print(f"❌ {error_message}")
+        return False, error_message, None
+    except Exception as e:
+        import traceback
+        error_message = f"Unexpected Error: An unexpected Python error occurred during database upload. Details: {type(e).__name__} - {e}"
+        print(f"❌ {error_message}")
+        traceback.print_exc()
         return False, error_message, None

@@ -165,7 +165,7 @@ def run_benchmark(pipe, duration):
         # Return benchmark results with completed flag
         return {
             "completed": True,  # Flag indicating the benchmark completed successfully
-            "images_generated": image_count,
+            "result": image_count,
             "max_temp": max_temp,
             "avg_temp": avg_temp,
             "elapsed_time": elapsed,
@@ -183,7 +183,7 @@ def run_benchmark(pipe, duration):
         pynvml.nvmlShutdown()
         return {
             "completed": False,  # Flag indicating the benchmark was canceled
-            "images_generated": image_count,
+            "result": image_count,
             "max_temp": max(temp_readings) if temp_readings else 0,
             "avg_temp": sum(temp_readings)/len(temp_readings) if temp_readings else 0
         }
@@ -193,5 +193,6 @@ def run_benchmark(pipe, duration):
         print(f"Error during benchmark: {e}")
         return {
             "completed": False,  # Flag indicating the benchmark failed
-            "error": str(e)
+            "error": str(e),
+            "result": image_count
         }

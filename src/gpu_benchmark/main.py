@@ -17,7 +17,13 @@ def main():
     parser = argparse.ArgumentParser(description="GPU Benchmark by United Compute")
     parser.add_argument("--provider", type=str, help="Cloud provider (e.g., RunPod, AWS, GCP) or Private", default="Private")
     parser.add_argument("--gpu", type=int, help="GPU device index to use (defaults to CUDA_VISIBLE_DEVICES or 0)", default=None)
-    parser.add_argument("--model", type=str, help="Model to benchmark (e.g., stable-diffusion, llm)", default="stable-diffusion", choices=["stable-diffusion", "llm"])
+    parser.add_argument(
+        "--model", 
+        type=str, 
+        help="Model to benchmark (e.g., stable-diffusion-1-5, llm)", 
+        default="stable-diffusion-1-5",
+        choices=["stable-diffusion-1-5", "llm"]
+    )
     args = parser.parse_args()
     
     # If GPU device is specified, set it
@@ -35,13 +41,13 @@ def main():
     duration = 10  # 300 seconds
     
     results = None
-    if args.model == "stable-diffusion":
-        print("Loading Stable Diffusion pipeline...")
+    if args.model == "stable-diffusion-1-5":
+        print("Loading Stable Diffusion 1.5 pipeline...")
         # This will be moved to stable_diffusion.py
         pipe = stable_diffusion_1_5.load_pipeline() 
         print("Pipeline loaded successfully!")
         
-        print("Running Stable Diffusion benchmark...")
+        print("Running Stable Diffusion 1.5 benchmark...")
         results = stable_diffusion_1_5.run_benchmark(pipe=pipe, duration=duration)
     elif args.model == "llm":
         print("Loading LLM model...")
@@ -56,20 +62,19 @@ def main():
 
     # Only proceed if the benchmark completed successfully (not canceled)
     if results and results.get("completed", False):
-        # The detailed print block is removed.
-        # Variables are still prepared for the upload_benchmark_results call.
         primary_metric_val = None
         max_temp_val = None
         avg_temp_val = None
         gpu_memory_val = None
 
-        if args.model == "stable-diffusion":
-            primary_metric_val = results.get('images_generated')
+        # Get the primary metric using the generic 'result' key
+        primary_metric_val = results.get('result')
+
+        if args.model == "stable-diffusion-1-5":
             max_temp_val = results.get('max_temp')
             avg_temp_val = results.get('avg_temp')
             gpu_memory_val = results.get('gpu_memory_total')
         elif args.model == "llm":
-            primary_metric_val = results.get('tokens_processed')
             max_temp_val = results.get('max_temp_c')
             avg_temp_val = results.get('avg_temp_c')
             gpu_memory_val = results.get('gpu_memory_total_gb')
@@ -77,7 +82,7 @@ def main():
         # The upload_benchmark_results function will print the success message and ID.
         upload_benchmark_results(
             model_name=args.model,
-            primary_metric_value=primary_metric_val,
+            primary_metric_value=primary_metric_val, # This is now consistently from results.get('result')
             max_temp=max_temp_val,
             avg_temp=avg_temp_val,
             cloud_provider=provider,
@@ -91,10 +96,17 @@ def main():
         print("Benchmark completed") # Final confirmation message
     elif results and results.get("error"):
         print(f"\nBenchmark failed: {results.get('error')}")
-    elif results is None and args.model != "stable-diffusion" and args.model != "llm": # Model not supported
+    elif results is None and args.model != "stable-diffusion-1-5" and args.model != "llm": # Model not supported
         pass # Error already printed
     else:
         print("\nBenchmark was canceled or did not complete. Results not submitted.")
+        if results and results.get("reason") == "canceled":
+             # When printing items processed before cancellation, also use 'result'
+             items_before_cancel = results.get('result', 0)
+             if args.model == "llm":
+                  print(f"Tokens processed before cancellation: {items_before_cancel}")
+             elif args.model == "stable-diffusion-1-5":
+                  print(f"Images generated before cancellation: {items_before_cancel}")
 
 if __name__ == "__main__":
     main()
