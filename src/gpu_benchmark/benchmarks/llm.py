@@ -2,10 +2,16 @@
 import torch
 import time
 from tqdm import tqdm
-import pynvml
 import os
 import platform
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+if hasattr(torch.version, "hip"):
+    gpuType = "AMD"
+    import amdsmi
+else:
+    gpuType = "Nvidia"
+    import pynvml
 
 def get_clean_platform():
     os_platform = platform.system()
@@ -27,19 +33,86 @@ def get_clean_platform():
 
 def get_nvml_device_handle():
     """Get the correct NVML device handle for the GPU being used."""
-    pynvml.nvmlInit()
-    
+    if gpuType == "AMD":
+        amdsmi.amdsmi_init()
+    else:
+        pynvml.nvmlInit()
+
+    # Check CUDA_VISIBLE_DEVICES first
     cuda_visible_devices = os.environ.get('CUDA_VISIBLE_DEVICES')
     if cuda_visible_devices is not None:
         try:
+            # When CUDA_VISIBLE_DEVICES is set, the first (and only) visible GPU
+            # becomes index 0 to CUDA, but we need to use the original index for NVML
             original_gpu_index = int(cuda_visible_devices.split(',')[0])
-            handle = pynvml.nvmlDeviceGetHandleByIndex(original_gpu_index)
+            if gpuType == "AMD":
+                handle = amdsmi.amdsmi_get_processor_handles()[original_gpu_index]
+            else:
+                handle = pynvml.nvmlDeviceGetHandleByIndex(original_gpu_index)
             return handle
         except (ValueError, IndexError):
             print(f"Warning: Could not parse CUDA_VISIBLE_DEVICES={cuda_visible_devices}")
     
+    # Fallback to current CUDA device
     cuda_idx = torch.cuda.current_device()
-    return pynvml.nvmlDeviceGetHandleByIndex(cuda_idx)
+    if gpuType == "AMD":
+        return amdsmi.amdsmi_get_processor_handles()[cuda_idx]
+    else:
+        return pynvml.nvmlDeviceGetHandleByIndex(cuda_idx)
+
+def getTemperature(handle, isFinalTemp):
+    if gpuType == "AMD":
+        try:
+            return amdsmi.amdsmi_get_temp_metric(handle, amdsmi.AmdSmiTemperatureType.EDGE, amdsmi.AmdSmiTemperatureMetric.CURRENT)
+        except amdsmi.AmdSmiException as e:
+            if "Uninitialized" not in str(e) or torch.cuda.is_available():
+                if isFinalTemp:
+                    print(f"AMDSMI warning (temperature): {e}")
+                else:
+                    print(f"NVML warning (final temperature): {e}")
+    else:
+        try:
+            return pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
+        except pynvml.NVMLError as e:
+            if "Uninitialized" not in str(e) or torch.cuda.is_available(): # Log if not expected
+                if isFinalTemp:
+                    print(f"AMDSMI warning (temperature): {e}")
+                else:
+                    print(f"NVML warning (final temperature): {e}")
+
+def getPowerUsage(handle):
+    if gpuType == "AMD":
+        try:
+            return amdsmi.amdsmi_get_power_info(handle)['average_socket_power']
+        except amdsmi.AmdSmiException as e:
+            if "Uninitialized" not in str(e) or torch.cuda.is_available():
+                print(f"AMDSMI warning (power): {e}")
+    else:
+        try:
+            return round(pynvml.nvmlDeviceGetPowerUsage(handle) / 1000.0, 2)  # mW to W 2 decimal places
+        except pynvml.NVMLError as e:
+            if "Uninitialized" not in str(e) and "Not Supported" not in str(e) or torch.cuda.is_available():
+                    print(f"NVML warning (power): {e}")
+
+def getMemoryInfo(handle):
+    if gpuType == "AMD":
+        try:
+            return round(amdsmi.amdsmi_get_gpu_memory_total(handle, amdsmi.amdsmi_interface.AmdSmiMemoryType.VRAM) / (1024**3), 2) # bytes to GB
+        except amdsmi.AmdSmiException as e:
+            if "Uninitialized" not in str(e) or torch.cuda.is_available():
+                print(f"AMDSMI warning (memory info): {e}")
+    else:
+        try:
+            return round(pynvml.nvmlDeviceGetMemoryInfo(handle).total / (1024**3), 2) # bytes to GB
+        except pynvml.NVMLError as e:
+            if "Uninitialized" not in str(e) or torch.cuda.is_available():
+                print(f"NVML warning (memory info): {e}")
+
+def handleCleanup():
+    if gpuType == "AMD":
+        amdsmi.amdsmi_shut_down()
+    else:
+        pynvml.nvmlShutdown()
 
 def load_llm_model():
     """Load the LLM and tokenizer."""
@@ -105,13 +178,8 @@ def run_llm_benchmark(model_payload, duration):
             while time.time() < end_time_wall:
                 current_temp = None
                 if handle:
-                    try:
-                        current_temp = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
-                        temp_readings.append(current_temp)
-                    except pynvml.NVMLError as e:
-                        if "Uninitialized" not in str(e) or torch.cuda.is_available(): # Log if not expected
-                            print(f"NVML warning (temperature): {e}")
-
+                    current_temp = getTemperature(handle, False)
+                    temp_readings.append(current_temp)
 
                 input_ids = tokenizer(prompt_text, return_tensors="pt").input_ids.to(model.device)
 
@@ -140,12 +208,8 @@ def run_llm_benchmark(model_payload, duration):
                 tokens_processed += num_generated_this_step
 
                 if handle:
-                    try:
-                        current_power = pynvml.nvmlDeviceGetPowerUsage(handle) / 1000.0  # mW to W
-                        power_readings.append(current_power)
-                    except pynvml.NVMLError as e:
-                        if "Uninitialized" not in str(e) and "Not Supported" not in str(e) or torch.cuda.is_available():
-                             print(f"NVML warning (power): {e}")
+                    current_power = getPowerUsage(handle)
+                    power_readings.append(current_power)
                 
                 current_time_progress_wall = time.time()
                 current_percent = min(100, int((current_time_progress_wall - start_time_wall) / duration * 100))
@@ -158,12 +222,8 @@ def run_llm_benchmark(model_payload, duration):
                     last_update_percent = current_percent
         
         if handle:
-            try:
-                final_temp = pynvml.nvmlDeviceGetTemperature(handle, pynvml.NVML_TEMPERATURE_GPU)
-                temp_readings.append(final_temp)
-            except pynvml.NVMLError as e:
-                 if "Uninitialized" not in str(e) or torch.cuda.is_available():
-                    print(f"NVML warning (final temp): {e}")
+            final_temp = getTemperature(handle, True)
+            temp_readings.append(final_temp)
 
         elapsed_wall_time_sec = time.time() - start_time_wall
         
@@ -182,18 +242,16 @@ def run_llm_benchmark(model_payload, duration):
                 gpu_power_watts = avg_power
             except Exception: pass # Catch division by zero if power_readings is empty
 
-            try:
-                meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
-                gpu_memory_total_gb = round(meminfo.total / (1024**3), 2)  # bytes to GB
-            except pynvml.NVMLError as e:
-                if "Uninitialized" not in str(e) or torch.cuda.is_available():
-                    print(f"NVML warning (memory info): {e}")
+            gpu_memory_total_gb = getMemoryInfo(handle)
         
         platform_info = get_clean_platform()
-        acceleration_info = f"CUDA {torch.version.cuda}" if torch.cuda.is_available() else "N/A"
+        if gpuType == "AMD":
+            acceleration_info = f"ROCM {torch.version.hip}" if torch.cuda.is_available() else "N/A"
+        else:
+            acceleration_info = f"CUDA {torch.version.cuda}" if torch.cuda.is_available() else "N/A"
         torch_version_info = torch.__version__
 
-        if handle: pynvml.nvmlShutdown()
+        if handle: handleCleanup()
 
         return {
             "completed": True,
@@ -214,7 +272,7 @@ def run_llm_benchmark(model_payload, duration):
         }
     
     except KeyboardInterrupt:
-        if handle: pynvml.nvmlShutdown()
+        if handle: handleCleanup()
         elapsed_wall_time_sec = time.time() - start_time_wall
         return {
             "completed": False,
@@ -226,7 +284,7 @@ def run_llm_benchmark(model_payload, duration):
             "avg_temp_c": sum(temp_readings)/len(temp_readings) if temp_readings else 0
         }
     except Exception as e:
-        if handle: pynvml.nvmlShutdown()
+        if handle: handleCleanup()
         print(f"Error during LLM benchmark: {e}")
         import traceback
         traceback.print_exc()
