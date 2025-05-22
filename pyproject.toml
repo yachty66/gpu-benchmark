@@ -16,5 +16,11 @@ dependencies = [
     "supabase"
 ]
 
+[project.optional-dependencies]
+rocm = [
+  "amdsmi"
+]
+
+
 [project.scripts]
 gpu-benchmark = "gpu_benchmark.main:main"
