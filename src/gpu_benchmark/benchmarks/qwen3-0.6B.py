@@ -201,7 +201,7 @@ if __name__ == "__main__":
     model, tokenizer = setup_qwen_model()
     
     # Run benchmark for 60 seconds
-    results = run_benchmark(model, tokenizer, duration=15)
+    results = run_benchmark(model, tokenizer, duration=300)
     
     # Print results
     print("\nBenchmark Results:")
