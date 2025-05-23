@@ -47,7 +47,7 @@ def upload_benchmark_results(model_name: str, primary_metric_value: int, max_tem
 
     if model_name == "stable-diffusion-1-5":
         table_name = "stable-diffusion-1-5"
-    elif model_name == "qwen3-0.6b":
+    elif model_name == "qwen3-0-6b":
         table_name = "qwen3-0-6b"
     else:
         err_msg = f"Unsupported model_name '{model_name}' for database upload."

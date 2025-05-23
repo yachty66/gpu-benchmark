@@ -20,9 +20,9 @@ def main():
     parser.add_argument(
         "--model", 
         type=str, 
-        help="Model to benchmark (e.g., stable-diffusion-1-5, qwen3-0.6b)", 
+        help="Model to benchmark (e.g., stable-diffusion-1-5, qwen3-0-6b)", 
         default="stable-diffusion-1-5",
-        choices=["stable-diffusion-1-5", "qwen3-0.6b"]
+        choices=["stable-diffusion-1-5", "qwen3-0-6b"]
     )
     args = parser.parse_args()
     
@@ -73,9 +73,9 @@ def main():
             avg_temp_val = results.get('avg_temp')
             gpu_memory_val = results.get('gpu_memory_total')
         elif args.model == "qwen3-0-6b":
-            max_temp_val = results.get('max_temp_c')
-            avg_temp_val = results.get('avg_temp_c')
-            gpu_memory_val = results.get('gpu_memory_total_gb')
+            max_temp_val = results.get('max_temp')
+            avg_temp_val = results.get('avg_temp')
+            gpu_memory_val = results.get('gpu_memory_total')
         
         # The upload_benchmark_results function will print the success message and ID.
         upload_benchmark_results(
@@ -94,14 +94,14 @@ def main():
         print("Benchmark completed") # Final confirmation message
     elif results and results.get("error"):
         print(f"\nBenchmark failed: {results.get('error')}")
-    elif results is None and args.model != "stable-diffusion-1-5" and args.model != "qwen3-0.6b": # Model not supported
+    elif results is None and args.model != "stable-diffusion-1-5" and args.model != "qwen3-0-6b": # Model not supported
         pass # Error already printed
     else:
         print("\nBenchmark was canceled or did not complete. Results not submitted.")
         if results and results.get("reason") == "canceled":
              # When printing items processed before cancellation, also use 'result'
              items_before_cancel = results.get('result', 0)
-             if args.model == "qwen3-0.6b":
+             if args.model == "qwen3-0-6b":
                   print(f"Generations processed before cancellation: {items_before_cancel}")
              elif args.model == "stable-diffusion-1-5":
                   print(f"Images generated before cancellation: {items_before_cancel}")
