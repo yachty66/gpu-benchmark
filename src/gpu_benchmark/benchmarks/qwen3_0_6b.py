@@ -103,7 +103,8 @@ def run_benchmark(model, tokenizer, duration):
                         messages,
                         tokenize=False,
                         add_generation_prompt=True,
-                        enable_thinking=False
+                        enable_thinking=False,
+                        add_special_tokens=False
                     )
                     model_inputs = tokenizer([text], return_tensors="pt").to(model.device)
                     
@@ -114,6 +115,7 @@ def run_benchmark(model, tokenizer, duration):
                         use_cache=True,
                         pad_token_id=tokenizer.pad_token_id
                     )
+
                 
                 end_event.record()
                 torch.cuda.synchronize()

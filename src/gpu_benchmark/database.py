@@ -30,7 +30,7 @@ def upload_benchmark_results(model_name: str, primary_metric_value: int, max_tem
     """Upload benchmark results to Supabase database.
     
     Args:
-        model_name: Name of the model ("stable-diffusion-1-5", "qwen3-0.6b") to determine the target table.
+        model_name: Name of the model ("stable-diffusion-1-5", "qwen3-0-6b") to determine the target table.
         primary_metric_value: Value for the primary metric (e.g., images generated or generations processed),
                               which will be stored in the 'result' column.
         max_temp: Maximum GPU temperature recorded.
