@@ -165,13 +165,13 @@ def run_benchmark(model, tokenizer, duration):
         return {
             "completed": True,
             "result": generation_count,
-            "max_temp": max_temp,
-            "avg_temp": avg_temp,
+            "max_temp_c": max_temp,
+            "avg_temp_c": avg_temp,
             "elapsed_time": elapsed,
             "avg_time_ms": avg_time_ms,
             "gpu_utilization": (total_gpu_time/1000)/elapsed*100,
             "gpu_power_watts": avg_power,
-            "gpu_memory_total": gpu_memory_total,
+            "gpu_memory_total_gb": gpu_memory_total,
             "platform": get_clean_platform(),
             "acceleration": f"CUDA {torch.version.cuda}" if torch.cuda.is_available() else "N/A",
             "torch_version": torch.__version__
@@ -182,8 +182,8 @@ def run_benchmark(model, tokenizer, duration):
         return {
             "completed": False,
             "result": generation_count,
-            "max_temp": max(temp_readings) if temp_readings else 0,
-            "avg_temp": sum(temp_readings)/len(temp_readings) if temp_readings else 0,
+            "max_temp_c": max(temp_readings) if temp_readings else 0,
+            "avg_temp_c": sum(temp_readings)/len(temp_readings) if temp_readings else 0,
             "avg_time_ms": total_gpu_time / generation_count if generation_count > 0 else 0
         }
     except Exception as e:
@@ -196,11 +196,28 @@ def run_benchmark(model, tokenizer, duration):
             "avg_time_ms": total_gpu_time / generation_count if generation_count > 0 else 0
         }
 
+def load_pipeline():
+    """Load the Qwen model pipeline and return it."""    
+    model_name = "Qwen/Qwen3-0.6B"
+    # Disable tokenizer warnings
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        torch_dtype=torch.float16,
+        device_map="auto",
+        use_cache=True,
+        low_cpu_mem_usage=True,
+    )
+    # Disable generation warnings
+    model.generation_config.pad_token_id = tokenizer.pad_token_id
+    model.config.pad_token_id = tokenizer.pad_token_id
+    return model, tokenizer
+
 if __name__ == "__main__":
-    # Setup the model
-    model, tokenizer = setup_qwen_model()
+    # Load the model pipeline
+    model, tokenizer = load_pipeline()
     
-    # Run benchmark for 60 seconds
+    # Run benchmark for 300 seconds (5 minutes)
     results = run_benchmark(model, tokenizer, duration=300)
     
     # Print results
@@ -213,11 +230,11 @@ if __name__ == "__main__":
         if 'avg_time_ms' in results:
             print(f"Average generation time: {results['avg_time_ms']:.2f}ms")
             print(f"GPU utilization: {results['gpu_utilization']:.2f}%")
-            print(f"Maximum GPU temperature: {results['max_temp']}°C")
-            print(f"Average GPU temperature: {results['avg_temp']:.2f}°C")
+            print(f"Maximum GPU temperature: {results['max_temp_c']}°C")
+            print(f"Average GPU temperature: {results['avg_temp_c']:.2f}°C")
             if results['gpu_power_watts']:
                 print(f"Average GPU power usage: {results['gpu_power_watts']}W")
-            print(f"GPU memory total: {results['gpu_memory_total']}GB")
+            print(f"GPU memory total: {results['gpu_memory_total_gb']}GB")
             print(f"Platform: {results['platform']}")
             print(f"Acceleration: {results['acceleration']}")
             print(f"PyTorch version: {results['torch_version']}")

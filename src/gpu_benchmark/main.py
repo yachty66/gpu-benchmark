@@ -1,5 +1,5 @@
 # src/gpu_benchmark/main.py
-from .benchmarks import stable_diffusion_1_5, llm
+from .benchmarks import stable_diffusion_1_5, qwen3_0_6b
 from .benchmark import load_pipeline, run_benchmark
 from .database import upload_benchmark_results
 import argparse
@@ -20,9 +20,9 @@ def main():
     parser.add_argument(
         "--model", 
         type=str, 
-        help="Model to benchmark (e.g., stable-diffusion-1-5, llm)", 
+        help="Model to benchmark (e.g., stable-diffusion-1-5, qwen3-0.6b)", 
         default="stable-diffusion-1-5",
-        choices=["stable-diffusion-1-5", "llm"]
+        choices=["stable-diffusion-1-5", "qwen3-0.6b"]
     )
     args = parser.parse_args()
     
@@ -43,19 +43,17 @@ def main():
     results = None
     if args.model == "stable-diffusion-1-5":
         print("Loading Stable Diffusion 1.5 pipeline...")
-        # This will be moved to stable_diffusion.py
         pipe = stable_diffusion_1_5.load_pipeline() 
         print("Pipeline loaded successfully!")
         
         print("Running Stable Diffusion 1.5 benchmark...")
         results = stable_diffusion_1_5.run_benchmark(pipe=pipe, duration=duration)
-    elif args.model == "llm":
-        print("Loading LLM model...")
-        # This will be a new function in llm.py
-        model_payload_dict = llm.load_llm_model() 
+    elif args.model == "qwen3-0-6b":
+        print("Loading Qwen3-0-6B model...")
+        model, tokenizer = qwen3_0_6b.load_pipeline()
         
-        print("Running LLM benchmark...")
-        results = llm.run_llm_benchmark(model_payload=model_payload_dict, duration=duration)
+        print("Running Qwen3-0-6B benchmark...")
+        results = qwen3_0_6b.run_benchmark(model=model, tokenizer=tokenizer, duration=duration)
     else:
         print(f"Error: Model {args.model} not supported.")
         return
@@ -74,7 +72,7 @@ def main():
             max_temp_val = results.get('max_temp')
             avg_temp_val = results.get('avg_temp')
             gpu_memory_val = results.get('gpu_memory_total')
-        elif args.model == "llm":
+        elif args.model == "qwen3-0-6b":
             max_temp_val = results.get('max_temp_c')
             avg_temp_val = results.get('avg_temp_c')
             gpu_memory_val = results.get('gpu_memory_total_gb')
@@ -96,15 +94,15 @@ def main():
         print("Benchmark completed") # Final confirmation message
     elif results and results.get("error"):
         print(f"\nBenchmark failed: {results.get('error')}")
-    elif results is None and args.model != "stable-diffusion-1-5" and args.model != "llm": # Model not supported
+    elif results is None and args.model != "stable-diffusion-1-5" and args.model != "qwen3-0.6b": # Model not supported
         pass # Error already printed
     else:
         print("\nBenchmark was canceled or did not complete. Results not submitted.")
         if results and results.get("reason") == "canceled":
              # When printing items processed before cancellation, also use 'result'
              items_before_cancel = results.get('result', 0)
-             if args.model == "llm":
-                  print(f"Tokens processed before cancellation: {items_before_cancel}")
+             if args.model == "qwen3-0.6b":
+                  print(f"Generations processed before cancellation: {items_before_cancel}")
              elif args.model == "stable-diffusion-1-5":
                   print(f"Images generated before cancellation: {items_before_cancel}")
 
