@@ -1,6 +1,5 @@
 # src/gpu_benchmark/main.py
 from .benchmarks import stable_diffusion_1_5, qwen3_0_6b
-from .benchmark import load_pipeline, run_benchmark
 from .database import upload_benchmark_results
 import argparse
 import torch 
