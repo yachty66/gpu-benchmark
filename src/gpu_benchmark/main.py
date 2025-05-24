@@ -37,7 +37,7 @@ def main():
     print("This benchmark will run for 5 minutes")
     
     # Fixed duration
-    duration = 10  # 300 seconds
+    duration = 300  # 300 seconds
     
     results = None
     if args.model == "stable-diffusion-1-5":

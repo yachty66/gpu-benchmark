@@ -215,28 +215,28 @@ def load_pipeline():
     model.config.pad_token_id = tokenizer.pad_token_id
     return model, tokenizer
 
-if __name__ == "__main__":
-    # Load the model pipeline
-    model, tokenizer = load_pipeline()
+# if __name__ == "__main__":
+#     # Load the model pipeline
+#     model, tokenizer = load_pipeline()
     
-    # Run benchmark for 300 seconds (5 minutes)
-    results = run_benchmark(model, tokenizer, duration=300)
+#     # Run benchmark for 300 seconds (5 minutes)
+#     results = run_benchmark(model, tokenizer, duration=300)
     
-    # Print results
-    print("\nBenchmark Results:")
-    print(f"Completed: {results['completed']}")
-    if results.get('error'):
-        print(f"Error: {results['error']}")
-    else:
-        print(f"Total generations: {results['result']}")
-        if 'avg_time_ms' in results:
-            print(f"Average generation time: {results['avg_time_ms']:.2f}ms")
-            print(f"GPU utilization: {results['gpu_utilization']:.2f}%")
-            print(f"Maximum GPU temperature: {results['max_temp']}°C")
-            print(f"Average GPU temperature: {results['avg_temp']:.2f}°C")
-            if results['gpu_power_watts']:
-                print(f"Average GPU power usage: {results['gpu_power_watts']}W")
-            print(f"GPU memory total: {results['gpu_memory_total']}GB")
-            print(f"Platform: {results['platform']}")
-            print(f"Acceleration: {results['acceleration']}")
-            print(f"PyTorch version: {results['torch_version']}")
+#     # Print results
+#     print("\nBenchmark Results:")
+#     print(f"Completed: {results['completed']}")
+#     if results.get('error'):
+#         print(f"Error: {results['error']}")
+#     else:
+#         print(f"Total generations: {results['result']}")
+#         if 'avg_time_ms' in results:
+#             print(f"Average generation time: {results['avg_time_ms']:.2f}ms")
+#             print(f"GPU utilization: {results['gpu_utilization']:.2f}%")
+#             print(f"Maximum GPU temperature: {results['max_temp']}°C")
+#             print(f"Average GPU temperature: {results['avg_temp']:.2f}°C")
+#             if results['gpu_power_watts']:
+#                 print(f"Average GPU power usage: {results['gpu_power_watts']}W")
+#             print(f"GPU memory total: {results['gpu_memory_total']}GB")
+#             print(f"Platform: {results['platform']}")
+#             print(f"Acceleration: {results['acceleration']}")
+#             print(f"PyTorch version: {results['torch_version']}")
