@@ -27,13 +27,22 @@ gpu-benchmark
 ### Optional Arguments
 
 If you're running on a cloud provider, specify it with the `--provider` flag:
+
 ```bash
 gpu-benchmark --provider runpod
+```
+
+You can specify the model to use for the benchmark with the `--model` flag. By default, the Stable Diffusion 1.5 model is used.
+Example for running a different model:
+
+```bash
+gpu-benchmark --model qwen3-0-6b
 ```
 
 For multi-GPU systems, you can select a specific GPU like this:
 
 1. Using the `--gpu` flag:
+
 ```bash
 gpu-benchmark --gpu 1  # Uses GPU index 1
 ```
@@ -47,7 +56,8 @@ The tool will:
 
 ## What it measures
 
-- **Images Generated**: Number of Stable Diffusion images generated in 5 minutes
+- **Benchmark Score**: Number of iterations or images generated in 5 minutes (model-dependent)
+- **GPU Model**: The specific model of your GPU (e.g., NVIDIA GeForce RTX 4090)
 - **Max Heat**: Maximum GPU temperature reached (°C)
 - **Avg Heat**: Average GPU temperature during the benchmark (°C)
 - **Country**: Your location (detected automatically)
@@ -60,21 +70,9 @@ The tool will:
 ## Requirements
 
 - CUDA-compatible NVIDIA GPU or ROCm-compatible AMD GPU (Linux Only)
-- Minimum 4GB VRAM (benchmark uses ~3.3GB VRAM in fp16 mode)
 - Python 3.8+
-- Internet connection (for results submission - although you can run the test offline too)
 
 ## Links
 
 - [Official Website](https://www.unitedcompute.ai)
 - [GPU Benchmark Results](https://www.unitedcompute.ai/gpu-benchmark)
-
-## Todos
-
-- change table name from benchmark to sd - and change in frontend accordingly
-- change column name in benchmark table and change code in frontend accordingly
-- make the flag sd15 and not stable diffusion only how it currently is
-- check how max and avg heat is getting meassured 
-- check how power watts are getting meassured
-- make sure prints are correct
-- make it a package
